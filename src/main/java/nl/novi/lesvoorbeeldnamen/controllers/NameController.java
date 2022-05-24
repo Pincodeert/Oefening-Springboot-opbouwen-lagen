@@ -9,13 +9,16 @@ import java.util.List;
 @RestController
 public class NameController {
 
+    //attribute
     private List<String> names = new ArrayList<>();
 
+    //constructor
     public NameController(){
         names.add("Gumball");
         names.add("Darwin");
     }
 
+    //methodes
     @GetMapping(value = "/names")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getNames(){
