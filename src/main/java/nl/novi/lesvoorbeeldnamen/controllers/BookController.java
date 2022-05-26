@@ -1,6 +1,8 @@
 package nl.novi.lesvoorbeeldnamen.controllers;
 
 import nl.novi.lesvoorbeeldnamen.model.Book;
+import nl.novi.lesvoorbeeldnamen.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -12,45 +14,35 @@ import java.util.List;
 @RestController
 public class BookController {
 
-    //attribute
-    private List<Book> books = new ArrayList<>();
 
-    //constructor
-    public BookController(){
-        Book book1 = new Book();
-        book1.setTitle("Harry Potter");
-        book1.setAuthor("Rowling");
-        book1.setIsbn("12345");
-        books.add(book1);
 
-        Book book2 = new Book();
-        book2.setTitle("Harry Potter, deel 2");
-        book2.setAuthor("Rowling");
-        book2.setIsbn("67890");
-        books.add(book2);
-    }
+    //constructor weggelaten (vanwege default lege constructor)
+
+
+    @Autowired
+    private BookRepository bookRepository;
 
     @GetMapping(value = "/books")
     public ResponseEntity<Object> getBooks(){
-            return ResponseEntity.ok(books);
+        return ResponseEntity.ok(bookRepository.findAll());
     }
 
     @GetMapping (value = "/books/{id}")
     public ResponseEntity<Object> getBook(@PathVariable int id){
-        return ResponseEntity.ok(books.get(id));
+        return ResponseEntity.ok(bookRepository.findById(id));
     }
 
     @DeleteMapping(value = "/books/{id}")
     public ResponseEntity<Object> removeBook(@PathVariable ("id") int id){
-        books.remove(id);
+        bookRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/books")
     public ResponseEntity<Object> addBook(@RequestBody Book book){
-        books.add(book);
+        Book newBook = bookRepository.save(book);
 
-        int newId = books.size() - 1;
+        int newId = newBook.getId();
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newId).toUri();
 
@@ -59,13 +51,8 @@ public class BookController {
 
     @PutMapping(value = "/books/{id}")
     public ResponseEntity<Object> updateBook(@PathVariable int id, @RequestBody Book book){
-        books.set(id, book);
-        return ResponseEntity.noContent().build();
-    }
+        Book existingBook = bookRepository.findById(id).orElse(null);
 
-    @PatchMapping
-    public ResponseEntity<Object> partialUpdateBook(@PathVariable int id, @RequestBody Book book){
-        Book existingBook = books.get(id);
         if(!book.getTitle().isEmpty()){
             existingBook.setTitle(book.getTitle());
         }
@@ -75,9 +62,29 @@ public class BookController {
         if(!book.getIsbn().isEmpty()){
             existingBook.setIsbn(book.getIsbn());
         }
-        books.set(id, existingBook);
+
+        bookRepository.save(existingBook);
+
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping(value = "books/{id}")
+    public ResponseEntity<Object> partialUpdateBook(@PathVariable int id, @RequestBody Book book){
+        Book existingBook = bookRepository.findById(id).orElse(null);
+
+        if(!(book.getTitle() == null) && !book.getTitle().isEmpty()){
+            existingBook.setTitle(book.getTitle());
+        }
+        if(!(book.getAuthor() == null) && !book.getAuthor().isEmpty()){
+            existingBook.setAuthor(book.getAuthor());
+        }
+        if(!(book.getIsbn() == null) && !book.getIsbn().isEmpty()){
+            existingBook.setIsbn(book.getIsbn());
+        }
+
+        bookRepository.save(existingBook);
+
+        return ResponseEntity.noContent().build();
+    }
 
 }
