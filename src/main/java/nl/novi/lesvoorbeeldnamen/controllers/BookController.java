@@ -18,8 +18,8 @@ public class BookController {
     private BookService bookService;
 
     @GetMapping(value = "/books")
-    public ResponseEntity<Object> getBooks(){
-        return ResponseEntity.ok(bookService.getBooks());
+    public ResponseEntity<Object> getBooks(@RequestParam(name="title", defaultValue="") String title){
+        return ResponseEntity.ok(bookService.getBooks(title));
     }
 
     @GetMapping (value = "/books/{id}")
