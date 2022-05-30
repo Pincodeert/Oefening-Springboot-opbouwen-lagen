@@ -1,10 +1,13 @@
 package nl.novi.lesvoorbeeldnamen.service;
 
+import nl.novi.lesvoorbeeldnamen.exception.RecordNotFoundException;
 import nl.novi.lesvoorbeeldnamen.model.Book;
 import nl.novi.lesvoorbeeldnamen.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class BookService {
@@ -13,15 +16,33 @@ public class BookService {
     private BookRepository bookRepository;
 
     public Iterable<Book> getBooks(){
+
         return bookRepository.findAll();
     }
 
     public Book getBook(int id){
-        return bookRepository.findById(id).orElse(null);
+
+        Optional<Book> optionalBook = bookRepository.findById(id);
+
+        if (optionalBook.isPresent()){
+            return optionalBook.get();
+        } else {
+            //exception
+            throw new RecordNotFoundException("ID does not exist!");
+        }
+
     }
 
     public void removeBook(int id){
-        bookRepository.deleteById(id);
+
+        Optional<Book> optionalBook = bookRepository.findById(id);
+
+        if(optionalBook.isPresent()){
+            bookRepository.deleteById(id);
+        } else {
+            throw new RecordNotFoundException("ID does not exist");
+        }
+
     }
 
     public int addBook(Book book){
